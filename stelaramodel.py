@@ -28,6 +28,10 @@ MAYBE:
 
 '''
 
+prop_factor = 0.922
+plasma_vol = 2.75
+threshold = 1.35
+
 def M(Ab_total, final_day, start_day=0):
 
     #calculating rate of antibody release (mg/L/day)
@@ -57,43 +61,47 @@ def I(bolus_dose, start_day=0):
         I_y = np.pad(I_y, (start_day,0))[:-start_day]
 
     #print(I_y)
-    return I_y
+    return I_y  
 
-#scalable variable definition
-#Ab_total = 20
-#final_day = 150
-#bolus_dose = 0
+def graph(markers=[]):
+    hfont = {'fontname': 'Arial', 'weight': 'bold', 'size': 10}
+    fig, ax = plt.subplots(1, 1)
+    fig.set_size_inches((10, 5.5))
+    plt.title("test", **hfont)
+    plt.ylabel("Serum Conc. (mg/L)", **hfont)
+    plt.xlabel("Days after Initial Dose", **hfont)
+
+    ax.plot(x, y, color = 'green', linewidth = 0.5)
+    ax.plot(x, np.ones(len(x))*threshold, color = 'orange', linewidth = 0.25)
+    for i in markers:
+        ax.axvline(i, ymin = 0, ymax = 1, color = 'red', linewidth = 0.2)
+    #plt.plot(np.ones(math.ceil(max(y)))*7, np.arange(math.ceil(max(y))), color = 'red', linewidth = 0.2)
+    plt.show()
 
 #constant variable definition
-prop_factor = 0.922
-plasma_vol = 2.75
-threshold = 1.35
 
-#graphing variables
-inc = 1
-days = 300
+'''EDIT BELOW'''
 
-x = np.arange(0,days+inc, inc)
+if __name__ == '__main__':
+#setting x
+    inc = 1
+    days = 300 #setup so that window is automatically created
 
-#CHANGE THIS
-t = I(0)
-for i in range(20):
-    t += I(5, start_day = 14*i)
-y = I(5) + t
+    x = np.arange(0,days+inc, inc)
 
-#print(y)
+    
 
-#plotting
-hfont = {'fontname': 'Arial', 'weight': 'bold', 'size': 10}
+    #CONTROL 
+    t = I(0)
+    for i in range(20):
+        t += I(5, start_day = 14*i)
+    y = I(5) + t
 
-ax, fig = plt.subplots(1,1)
+    #zero discovery
+    index = np.where(y <= threshold)[0][0]
+    xa, xb, ya, yb = x[index-1], x[index], y[index-1], y[index]
+    z = xa + ((threshold-ya)*(xb-xa)/(yb-ya))
+    print("Time of expiry:", z)
 
-#fig.set_size_inches(15, 10)
-plt.title("test", **hfont)
-plt.ylabel("Serum Conc. (mg/L)", **hfont)
-plt.xlabel("Days after Initial Dose", **hfont)
-plt.plot(x, y, color = 'green', linewidth = 0.5)
-#plt.plot(np.ones(math.ceil(max(y))-math.floor(min(y))+1)*14, np.arange(math.floor(min(y)), math.ceil(max(y))+1), color = 'red', linewidth = 0.2)
-#plt.plot(np.ones(math.ceil(max(y)))*7, np.arange(math.ceil(max(y))), color = 'red', linewidth = 0.2)
-plt.plot(x, np.ones(len(x))*threshold, color = 'orange', linewidth = 0.25)
-plt.show()
+    #print(y)
+    graph([z])
