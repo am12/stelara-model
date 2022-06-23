@@ -32,17 +32,17 @@ prop_factor = 0.922
 plasma_vol = 2.75
 threshold = 1.35
 
-def M(Ab_total, final_day, start_day=0):
+def M(Ab_total, release_time, start_day=0):
 
     #calculating rate of antibody release (mg/L/day)
-    release_coeff = Ab_total/plasma_vol*prop_factor/final_day
+    release_coeff = Ab_total/plasma_vol*prop_factor/release_time
     print("Ab release (mg/day):", release_coeff*plasma_vol)
 
     M_clear = lambda t: release_coeff*np.exp(-0.036*t)
 
     M_y = np.zeros(len(x))
     for i in range(1,len(x)):
-        if x[i] <= final_day:
+        if x[i] <= release_time:
             M_y[i:] += M_clear(x)[:-i]
 
     if start_day != 0:
@@ -83,19 +83,35 @@ def graph(markers=[]):
 '''EDIT BELOW'''
 
 if __name__ == '__main__':
-#setting x
-    inc = 1
-    days = 300 #setup so that window is automatically created
-
-    x = np.arange(0,days+inc, inc)
-
     
-
-    #CONTROL 
+    #CONTROL PANEL TEST
+    '''
     t = I(0)
     for i in range(20):
         t += I(5, start_day = 14*i)
     y = I(5) + t
+    '''
+    #input controls (induction(IV), subq maintenance, oral?, schedules?)
+    induction = int(input("Induction Phase (mg): "))
+    maintenance, oral = [], []
+    while (0,0,0) not in maintenance:
+        maintenance.append(tuple([int(i) for i in input("Maintenance Phase (mg length start): ").split(' ')]))
+    maintenance.pop()
+    while (0,0) not in oral:
+        oral.append(tuple([int(i) for i in input("Oral Phase (mg start): ").split(' ')]))
+    oral.pop()
+
+    #setting x
+    window = int(input("Window: ")) #setup so that window is automatically created
+    inc = 1
+    x = np.arange(0,window+inc, inc)
+
+    #y calculation
+    y = I(induction)
+    for i in maintenance:
+        y += M(*i)
+    for j in oral:
+        y += I(*j)
 
     #zero discovery
     index = np.where(y <= threshold)[0][0]
