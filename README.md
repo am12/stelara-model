@@ -1,2 +1,2 @@
 # stelara-model
-A mathematical model of controlled-release dose concentrations in plasma, intended for developing novel dosing schedules.
+A pharmacokinetic model of antibody release after subq/im vs bolus injections, intended for developing novel dosing schedules.
